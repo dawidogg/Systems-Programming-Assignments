@@ -7,3 +7,5 @@
 .cache    
 *.symvers       
 *.ko       
+device_driver/test.sh
+circular_read_test

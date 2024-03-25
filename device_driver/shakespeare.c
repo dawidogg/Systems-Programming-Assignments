@@ -40,17 +40,8 @@ ssize_t shakespeare_read(struct file *filp, char __user *buf, size_t count, loff
         return -ERESTARTSYS;
     }
 
-    if (*f_pos >= capacity) {
-        mutex_unlock(&shakespeare_mutex);
-        printk(KERN_WARNING THIS "Finale of parchment.\n");
-        return 0;
-    }
-
-    if (*f_pos + count > capacity) {
-        count = capacity - *f_pos;
-    }
-
     for (i = 0; i < count; i++) {
+        if (*f_pos >= capacity) *f_pos = 0;
         err = copy_to_user(buf+i, shakespeare_data + *f_pos, 1);
         if (err != 0) {
             mutex_unlock(&shakespeare_mutex);
@@ -77,9 +68,12 @@ static void shakespeare_fill_data(void) {
         "Thou art more lovely and more temperate:\n"
         "Rough winds do shake the darling buds of May,\n"
         "And summer's lease hath all too short a date\n";
-    const int poem_size = sizeof(poem)/sizeof(char)-1;
+    const int poem_size = sizeof(poem)/sizeof(char);
     for (i = 0; i < capacity; i++) {
-        shakespeare_data[i] = poem[i%poem_size];
+        if (i < poem_size)
+            shakespeare_data[i] = poem[i];
+        else
+            shakespeare_data[i] = 0;
     }
 }
 
