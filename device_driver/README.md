@@ -44,7 +44,8 @@ Original: Shall
 Incrementing by 1: Tibmm
 Decrementing by 5: Od]hh
 Incrementing by 4: Shall
-- [ ] At the moment, the device node has to be created manually after inserting the module. Handle this automatically without the need for human intervention.
-- [ ] Add an entry for the device under the `/proc` file system, like `/proc/pseudo`.This entry should report the device capacity.
+- [x] At the moment, the device node has to be created manually after inserting the module. Handle this automatically without the need for human intervention. (commit 84ed6e3)
+- [x] Add an entry for the device under the `/proc` file system, like `/proc/pseudo`.This entry should report the device capacity.
+    + When I do `cat /proc/shakespeare`, it prints the information without stopping. I hope this is the expected behaviour.
 
 

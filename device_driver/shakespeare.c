@@ -9,6 +9,8 @@
 #include <linux/ioctl.h> // I/O control
 #include <linux/device.h> // Automatic device node creation
 #include <linux/kdev_t.h>
+#include <linux/proc_fs.h> // for adding device entry under proc
+#include <linux/kernel.h>
 
 #define THIS "[Shakespeare] "
 
@@ -27,6 +29,8 @@ static char *shakespeare_data = NULL;
 static int capacity = 200;
 module_param(capacity, int, S_IRUGO);
 static struct class *cl; 
+struct proc_dir_entry *shakespeare_proc;
+struct mutex shakespeare_proc_mutex;
 
 int shakespeare_open(struct inode *inode, struct file *filp) {
     printk(KERN_DEBUG THIS "Lo! Unveiling apparatus.\n");
@@ -134,6 +138,33 @@ struct file_operations shakespeare_fops = {
     .unlocked_ioctl = shakespeare_ioctl,
 };
 
+int shakespeare_proc_open(struct inode *inode, struct file *filp) {
+    printk(KERN_DEBUG THIS "Lo! Unveiling proc-apparatus.\n");
+    return 0;
+}
+
+
+int shakespeare_proc_release(struct inode *inode, struct file *filp) {
+    printk(KERN_DEBUG THIS "Hark! Concluding proc-apparatus.\n");
+    return 0;
+}
+
+ssize_t shakespeare_proc_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos) {
+    int info_size, err;
+    char info[255];
+    info_size = sprintf(info, "Capacity: %d\n", capacity);
+    err = copy_to_user(buf, info, info_size);
+    if (err != 0) return -EINVAL; 
+    return count;
+}
+
+
+static const struct proc_ops shakespeare_proc_ops = {
+    .proc_open  = shakespeare_proc_open,
+    .proc_release  = shakespeare_proc_release,
+    .proc_read  = shakespeare_proc_read,
+};
+
 static void shakespeare_fill_data(void) {
     int i = 0;
     const char poem[] = 
@@ -163,6 +194,7 @@ static int shakespeare_init(void) {
     }
     
     mutex_init(&shakespeare_mutex);
+    mutex_init(&shakespeare_proc_mutex);
     cdev_init(&shakespeare_cdev, &shakespeare_fops);
     err = cdev_add(&shakespeare_cdev, devno, shakespeare_count);
     if (err != 0) {
@@ -176,6 +208,7 @@ static int shakespeare_init(void) {
 
     cl = class_create(THIS_MODULE, "shakespeare");
     device_create(cl, NULL, devno, NULL, "shakespeare");
+    shakespeare_proc = proc_create("shakespeare", 0777, NULL, &shakespeare_proc_ops);
 
     printk(KERN_INFO THIS "Greetings, thou wide world.\n");
     printk(KERN_INFO THIS "Major: %d, Minor: %d\n", shakespeare_major, shakespeare_minor);
