@@ -7,6 +7,8 @@
 #include <linux/slab.h> // kmalloc kfree
 #include <linux/errno.h> // error codes like -EFAULT 
 #include <linux/ioctl.h> // I/O control
+#include <linux/device.h> // Automatic device node creation
+#include <linux/kdev_t.h>
 
 #define THIS "[Shakespeare] "
 
@@ -19,14 +21,12 @@ MODULE_AUTHOR("Denis Davidoglu");
 static unsigned int shakespeare_major = 0;
 static unsigned int shakespeare_minor = 0;
 static const unsigned int shakespeare_count = 1;
-
 struct cdev shakespeare_cdev;
 struct mutex shakespeare_mutex;
-
 static char *shakespeare_data = NULL;
-static int capacity = 64;
-
+static int capacity = 200;
 module_param(capacity, int, S_IRUGO);
+static struct class *cl; 
 
 int shakespeare_open(struct inode *inode, struct file *filp) {
     printk(KERN_DEBUG THIS "Lo! Unveiling apparatus.\n");
@@ -174,6 +174,9 @@ static int shakespeare_init(void) {
         return -ENOMEM;
     shakespeare_fill_data();
 
+    cl = class_create(THIS_MODULE, "shakespeare");
+    device_create(cl, NULL, devno, NULL, "shakespeare");
+
     printk(KERN_INFO THIS "Greetings, thou wide world.\n");
     printk(KERN_INFO THIS "Major: %d, Minor: %d\n", shakespeare_major, shakespeare_minor);
     printk(KERN_INFO THIS "Capacity: %d\n", capacity);
@@ -185,6 +188,8 @@ static void shakespeare_exit(void) {
     dev_t devno = 0;
     cdev_del(&shakespeare_cdev);
     devno = MKDEV(shakespeare_major, shakespeare_minor);
+    device_destroy(cl, devno);
+    class_destroy(cl);
     unregister_chrdev_region(devno, shakespeare_count);
     kfree(shakespeare_data);
     printk(KERN_INFO THIS "God save your majesty\n");

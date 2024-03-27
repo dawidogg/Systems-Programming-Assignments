@@ -37,7 +37,7 @@
     > ENOMEM Not enough space/cannot allocate memory 
     + I am successful at writing, however I cannot check for the return error code with sophisticated C functions like **fputc**, **fputs** etc.
 - [x] Implement the seek operation. Also, write a test program to test various cases. (commit 1cb4efd)
-- [x] Implement an ioctl operation named "PSEUDO_INC" which takes an 8-bit, signed integer value as parameter and increases each byte in the device by that value. Also, write a test program to test various cases.
+- [x] Implement an ioctl operation named "PSEUDO_INC" which takes an 8-bit, signed integer value as parameter and increases each byte in the device by that value. Also, write a test program to test various cases. (commit 31b58be)
 > $ ./ioctl_test
 Testing INC command on first five characters
 Original: Shall
