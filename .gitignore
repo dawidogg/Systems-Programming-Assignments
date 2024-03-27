@@ -1,4 +1,3 @@
-*.json
 *.order        
 *.mod       
 *.mod.c
@@ -8,4 +7,6 @@
 *.symvers       
 *.ko       
 device_driver/test.sh
-circular_read_test
+read_test
+write_test
+*.json

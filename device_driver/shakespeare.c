@@ -5,6 +5,7 @@
 #include <linux/uaccess.h> // copy_from_user, copy_to_user
 #include <linux/mutex.h> // atomic read
 #include <linux/slab.h> // kmalloc kfree
+#include <linux/errno.h> // error codes like -EFAULT 
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Denis Davidoglu");
@@ -42,7 +43,7 @@ ssize_t shakespeare_read(struct file *filp, char __user *buf, size_t count, loff
 
     for (i = 0; i < count; i++) {
         if (*f_pos >= capacity) *f_pos = 0;
-        err = copy_to_user(buf+i, shakespeare_data + *f_pos, 1);
+        err = copy_to_user(buf + i, shakespeare_data + *f_pos, 1);
         if (err != 0) {
             mutex_unlock(&shakespeare_mutex);
             return -EFAULT;
@@ -53,12 +54,39 @@ ssize_t shakespeare_read(struct file *filp, char __user *buf, size_t count, loff
     return count;
 }
 
+
+ssize_t shakespeare_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos) {
+    int err, retval = count;
+    printk(KERN_INFO THIS "f_pos = %d\n", (int)*f_pos);
+    if (mutex_lock_interruptible(&shakespeare_mutex) != 0) {
+        return -ERESTARTSYS;
+    }
+    if (*f_pos >= capacity) {
+        mutex_unlock(&shakespeare_mutex);
+        printk(KERN_INFO THIS "End of file reached\n");
+        return retval;
+    }
+    if (count > capacity - *f_pos) {
+        count = capacity - *f_pos;
+        retval = -ENOMEM;
+    }
+
+    err = copy_from_user(shakespeare_data + *f_pos, buf, count);
+    if (err != 0) {
+        mutex_unlock(&shakespeare_mutex);
+        return -EFAULT;
+    }
+    (*f_pos) += count;
+    mutex_unlock(&shakespeare_mutex);
+    return retval;
+}
+
 struct file_operations shakespeare_fops = {
     .owner = THIS_MODULE,
     .open = shakespeare_open,
     .release = shakespeare_release,
     .read = shakespeare_read,
-    // .write = shakespeare_write,
+    .write = shakespeare_write,
 };
 
 static void shakespeare_fill_data(void) {

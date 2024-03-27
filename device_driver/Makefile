@@ -2,6 +2,7 @@ obj-m := shakespeare.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
-	gcc -g circular_read_test.c -o circular_read_test
+	gcc -g read_test.c -o read_test
+	gcc -g write_test.c -o write_test
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
