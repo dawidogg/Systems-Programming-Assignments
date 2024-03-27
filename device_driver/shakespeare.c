@@ -6,11 +6,15 @@
 #include <linux/mutex.h> // atomic read
 #include <linux/slab.h> // kmalloc kfree
 #include <linux/errno.h> // error codes like -EFAULT 
+#include <linux/ioctl.h> // I/O control
+
+#define THIS "[Shakespeare] "
+
+#define SHAKESPEARE_IOC_MAGIC 'S'
+#define SHAKESPEARE_INC _IOW(SHAKESPEARE_IOC_MAGIC, 1, signed char)
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Denis Davidoglu");
-
-#define THIS "[Shakespeare] "
 
 static unsigned int shakespeare_major = 0;
 static unsigned int shakespeare_minor = 0;
@@ -101,6 +105,23 @@ loff_t shakespeare_llseek (struct file *filp, loff_t off, int whence) {
         return -ENOMEM;
     filp->f_pos = newpos;
     return newpos;
+
+}
+
+ 
+
+long shakespeare_ioctl (struct file *filp, unsigned int cmd, unsigned long arg) {
+    int i;
+    signed char increment_value = (signed char) arg;
+    switch (cmd) {
+        case SHAKESPEARE_INC:
+            for (i = 0; i < capacity; i++)
+                shakespeare_data[i] += increment_value;
+            break;
+        default:
+            return -ENOTTY; // inappropriate ioctl for device
+    }
+    return 0;
 }
 
 struct file_operations shakespeare_fops = {
@@ -110,6 +131,7 @@ struct file_operations shakespeare_fops = {
     .read = shakespeare_read,
     .write = shakespeare_write,
     .llseek = shakespeare_llseek,
+    .unlocked_ioctl = shakespeare_ioctl,
 };
 
 static void shakespeare_fill_data(void) {
@@ -155,6 +177,7 @@ static int shakespeare_init(void) {
     printk(KERN_INFO THIS "Greetings, thou wide world.\n");
     printk(KERN_INFO THIS "Major: %d, Minor: %d\n", shakespeare_major, shakespeare_minor);
     printk(KERN_INFO THIS "Capacity: %d\n", capacity);
+    printk(KERN_INFO THIS "SHAKESPEARE_INC number: %lu\n", SHAKESPEARE_INC);
     return 0;
 }
 
