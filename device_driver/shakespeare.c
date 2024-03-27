@@ -81,12 +81,35 @@ ssize_t shakespeare_write(struct file *filp, const char __user *buf, size_t coun
     return retval;
 }
 
+
+loff_t shakespeare_llseek (struct file *filp, loff_t off, int whence) {
+    loff_t newpos;
+    switch(whence) {
+        case SEEK_SET:
+            newpos = off;
+            break;
+        case SEEK_CUR:
+            newpos = filp->f_pos + off;
+            break;
+        case SEEK_END:
+            newpos = capacity - 1 + off;
+            break;
+        default: 
+            return -EINVAL;
+    }
+    if (newpos < 0 || newpos >= capacity)
+        return -ENOMEM;
+    filp->f_pos = newpos;
+    return newpos;
+}
+
 struct file_operations shakespeare_fops = {
     .owner = THIS_MODULE,
     .open = shakespeare_open,
     .release = shakespeare_release,
     .read = shakespeare_read,
     .write = shakespeare_write,
+    .llseek = shakespeare_llseek,
 };
 
 static void shakespeare_fill_data(void) {

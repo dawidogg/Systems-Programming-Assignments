@@ -21,7 +21,7 @@
 - [x] Make reading from the device a circular operation; i.e. upon reaching the end of the device, continue from the beginning. Also, write a test program to test various cases. (commit f0f7d7d)
     + All `*f_pos` check have been replaced with `if (*f_pos >= capacity) *f_pos = 0;`
     + `read_test.c` created and Makefile now includes its compile command 
-- [x] Implement the write operation. This should not be circular and report "device full" when device end is reached. Also, write a test program to test various cases.
+- [x] Implement the write operation. This should not be circular and report "device full" when device end is reached. Also, write a test program to test various cases. (commmit c6099c7)
     + Writing requires sudo permissions. I debugged my program by checking for return values of **open** and **write** and printing errno with **perror**.
     ```
     davidoglu@prison:~/sysprog_hw/device_driver
@@ -36,7 +36,7 @@
     + From errno(3):
     > ENOMEM Not enough space/cannot allocate memory 
     + I am successful at writing, however I cannot check for the return error code with sophisticated C functions like **fputc**, **fputs** etc.
-- [ ] Implement the seek operation. Also, write a test program to test various cases.
+- [x] Implement the seek operation. Also, write a test program to test various cases.
 - [ ] Implement an ioctl operation named "PSEUDO_INC" which takes an 8-bit, signed integer value as parameter and increases each byte in the device by that value. Also, write a test program to test various cases.
 - [ ] At the moment, the device node has to be created manually after inserting the module. Handle this automatically without the need for human intervention.
 - [ ] Add an entry for the device under the `/proc` file system, like `/proc/pseudo`.This entry should report the device capacity.

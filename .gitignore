@@ -9,4 +9,5 @@
 device_driver/test.sh
 read_test
 write_test
+seek_test
 *.json
