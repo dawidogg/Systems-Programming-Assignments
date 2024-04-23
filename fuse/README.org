@@ -1,0 +1,19 @@
+* FUSE project
+** curl script for dict protocol 
+Prefix matching
+#+begin_src sh :results output
+  pref=t
+  db=devil
+  curl -s dict://dict.org/m:$pref:$db:prefix
+#+end_src
+
+Exact matching
+#+begin_src sh :results output
+  word=tail
+  db=devil
+  curl -s dict://dict.org/d:$word:$db
+#+end_src
+
+** Resources
+- [[https://datatracker.ietf.org/doc/html/rfc2229][RFC 2229 - A Dictionary Server Protocol]]
+
