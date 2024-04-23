@@ -15,7 +15,6 @@
     > Attempting to reference the user-space memory directly could generate a page fault, which is something that kernel code is not allowed read and write to do. The result would be an “oops,” which would result in the death of the process that made the system call.
     + On device reads, I give a character at a time of a poem.
     + `od -t c -N 20`: Output readable characters with `od`.
-    + Since my poem contains non-ASCII character, they occupy more than one byte and are not meaningful when inspected through `od`.
 - [x] Make device capacity a module parameter. (commit 0c12d0b)
     + Is now settable using `sudo insmod shakespeare.ko capacity=128`
 - [x] Make reading from the device a circular operation; i.e. upon reaching the end of the device, continue from the beginning. Also, write a test program to test various cases. (commit f0f7d7d)
@@ -45,7 +44,7 @@ Incrementing by 1: Tibmm
 Decrementing by 5: Od]hh
 Incrementing by 4: Shall
 - [x] At the moment, the device node has to be created manually after inserting the module. Handle this automatically without the need for human intervention. (commit 84ed6e3)
-- [x] Add an entry for the device under the `/proc` file system, like `/proc/pseudo`.This entry should report the device capacity.
+- [x] Add an entry for the device under the `/proc` file system, like `/proc/pseudo`.This entry should report the device capacity. (commit dfe942b)
     + When I do `cat /proc/shakespeare`, it prints the information without stopping. I hope this is the expected behaviour.
 
 
